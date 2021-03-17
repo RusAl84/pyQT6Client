@@ -1,3 +1,6 @@
+import asyncio
+import concurrent
+import queue
 import sys
 import datetime
 from PyQt6 import uic, QtCore, QtGui, QtWidgets
@@ -14,11 +17,11 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
         uic.loadUi('messenger.ui', self)
         self.pushButton1.clicked.connect(self.pushButton1_clicked)
-        # self.UpdateLB()
 
     def pushButton1_clicked(self):
-        # print("PushButton_clicked")
-        # self.GetMessage(0)
+        self.SendMessage()
+
+    def SendMessage(self):
         UserName = self.lineEdit1.text()
         MessageText = self.lineEdit2.text()
         TimeStamp = str(datetime.datetime.today())
@@ -39,33 +42,35 @@ class MainWindow(QtWidgets.QMainWindow):
             # если ответ успешен, исключения задействованы не будут
             response.raise_for_status()
         except HTTPError as http_err:
-            print(f'HTTP error occurred: {http_err}')  # Python 3.6
+            # print(f'HTTP error occurred: {http_err}')  # Python 3.6
             return None
         except Exception as err:
-            print(f'Other error occurred: {err}')  # Python 3.6
+            # print(f'Other error occurred: {err}')  # Python 3.6
             return None
         else:
-            # print('Success!')
             text = response.text
-            print(text)
             return text
 
     def timerEvent(self):
-        print("tick")
-
-    def UpdateListBox(self):
         msg = self.GetMessage(self.MessageID)
-        # while (msg != 0)
-        #     print(msg)
-        #     self.MessageID += 1
+        if msg is not None:
+            msg = json.loads(msg)
+            UserName = msg["UserName"]
+            MessageText = msg["MessageText"]
+            TimeStamp = msg["TimeStamp"]
+            msgtext =f"{TimeStamp} : <{UserName}> : {MessageText}"
+            print(msgtext)
+            self.listWidget1.insertItem(  self.MessageID, msgtext)
+            self.MessageID+=1
+            msg = self.GetMessage(self.MessageID)
 
 
-    if __name__ == '__main__':
-        app = QtWidgets.QApplication(sys.argv)
-        w = MainWindow()
-        w.show()
-        timer = QtCore.QTimer()
-        time = QtCore.QTime(0, 0, 0)
-        timer.timeout.connect(w.timerEvent)
-        timer.start(1000)
-        sys.exit(app.exec())
+if __name__ == '__main__':
+    app = QtWidgets.QApplication(sys.argv)
+    w = MainWindow()
+    w.show()
+    timer = QtCore.QTimer()
+    time = QtCore.QTime(0, 0, 0)
+    timer.timeout.connect(w.timerEvent)
+    timer.start(5000)
+    sys.exit(app.exec())
