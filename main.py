@@ -1,9 +1,7 @@
-import asyncio
-import concurrent
-import queue
 import sys
-import datetime
+
 from PyQt6 import uic, QtCore, QtGui, QtWidgets
+import datetime
 import requests
 from requests.exceptions import HTTPError
 import json
